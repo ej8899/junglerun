@@ -11,7 +11,13 @@ const c = canvas.getContext("2d");
 // Game state & necessary globals
 //
 let isGameOver = false;
+let score = 0;
 const gravity = 0.5;
+
+const pixelFont = new FontFace('PixelFont', 'url(./PressStart2P-vaV7.ttf)');
+pixelFont.load().then((font) => {
+  document.fonts.add(font);
+});
 
 // Player object
 class Player  {
@@ -173,6 +179,14 @@ addEventListener("keyup", (e) => {
   }
 });
 
+function updateScore() {
+  if (isGameOver) return;
+  score = score + 0.05;
+  c.fillStyle = "white";
+  c.font = "20px PixelFont";
+  c.fillText("Score: " + parseInt(score), 10, 30);
+}
+
 // Update game state
 function update() {
   if (isGameOver) {
@@ -260,6 +274,8 @@ function draw() {
     obstacle.update();
 
     platform.draw();
+
+    updateScore();
 }
 
 
