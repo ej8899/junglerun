@@ -63,13 +63,13 @@ const player = new Player();
 
 // Obstacle object
 class Obstacle {
-  constructor() {
+  constructor(x,y,width,height,speed = 4,color = '#F00') {
     this.x = canvas.width;
     this.y = canvas.height - 30;
     this.width = 30;
     this.height = 30;
-    this.color = "#F00";
-    this.speed = 4;
+    this.color = color;
+    this.speed = speed;
   }
   draw() {
     c.fillStyle = this.color;
@@ -84,7 +84,7 @@ const obstacle = new Obstacle();
 
 class CollectibleObstacle extends Obstacle {
   constructor(x, y, width, height, color, speed, points) {
-    super(x, y, width, height, color, speed);
+    super(x, y, width, height, speed, color);
     this.points = points;
   }
 
@@ -200,7 +200,7 @@ addEventListener("keyup", (e) => {
 
 function updateScore() {
   if (isGameOver) return;
-  score = score + 0.05;
+  score += 0.05;
   c.fillStyle = "white";
   c.font = "20px PixelFont";
   c.fillText("Score: " + parseInt(score), 10, 30);
@@ -215,6 +215,7 @@ function update() {
   }
   // Move obstacle
   obstacle.x -= obstacle.speed;
+  treasureItem.update();
 
   // Check for collision with player
   if (
@@ -280,6 +281,7 @@ function update() {
       // Player collects the obstacle, add points or perform other actions
       // For now, let's reset the collectible obstacle position
       treasureItem.x = canvas.width;
+      score +=100;
       treasureItem.y = Math.random() * (canvas.height - treasureItem.height);
     }
 
@@ -308,7 +310,7 @@ function draw() {
 
     // Draw obstacle
     obstacle.update();
-    treasureItem.update();
+    treasureItem.draw();
 
     platform.draw();
 
