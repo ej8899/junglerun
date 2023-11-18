@@ -19,6 +19,27 @@ pixelFont.load().then((font) => {
   document.fonts.add(font);
 });
 
+
+//
+// sprites
+//
+const coinSheet = new Image();
+coinSheet.src = './sprites/Coin.png';
+const coinSprite = {
+  x: 0, // Starting X-coordinate of the first frame
+  y: 0, // Starting Y-coordinate of the first frame
+  width: 10, // Width of each frame
+  height: 10, // Height of each frame
+  currentFrame: 0, // The current frame index
+  active: false, // You can include other properties based on your needs
+};
+const coinFrames = [
+  { x:  0, y: 0, width: 10, height: 10 },
+  { x: 10, y: 0, width: 10, height: 10 },
+  { x: 20, y: 0, width: 10, height: 10 },
+  { x: 30, y: 0, width: 10, height: 10 },
+];
+
 // Player object
 class Player  {
     constructor() {
@@ -63,17 +84,18 @@ const player = new Player();
 
 // Obstacle object
 class Obstacle {
-  constructor(x,y,width,height,speed = 4,color = '#F00') {
+  constructor(x,y,width = 30,height = 30,speed = 4,color = '#F00') {
     this.x = canvas.width;
     this.y = canvas.height - 30;
-    this.width = 30;
-    this.height = 30;
+    this.width = width;
+    this.height = height;
     this.color = color;
     this.speed = speed;
   }
   draw() {
     c.fillStyle = this.color;
     c.fillRect(this.x, this.y, this.width, this.height);
+    // c.drawImage();
   }
   update() {
     this.draw();
@@ -83,12 +105,30 @@ class Obstacle {
 const obstacle = new Obstacle();
 
 class CollectibleObstacle extends Obstacle {
-  constructor(x, y, width, height, color, speed, points) {
-    super(x, y, width, height, speed, color);
+  constructor(x, y, width, height, sprite, speed, points) {
+    super(x, y, width, height, speed, "#FFD700");
     this.points = points;
+    this.sprite = sprite;
+    this.frameCounter = 0;
   }
 
-  update() {
+  draw() {
+    const frameIndex = Math.floor(Date.now() / 150) % coinFrames.length;
+    c.drawImage(
+      coinSheet,
+      coinFrames[frameIndex].x,
+      coinFrames[frameIndex].y,
+      coinFrames[frameIndex].width,
+      coinFrames[frameIndex].height,      
+      this.x,
+      this.y,
+      this.width *2.5,
+      this.height *2.5
+    );
+  }
+
+  update(frameDelay = 0) {
+    console.log(frameDelay)
     this.x -= this.speed;
 
     // Check if the obstacle has moved off-screen, reset its position
@@ -96,10 +136,21 @@ class CollectibleObstacle extends Obstacle {
       this.x = canvas.width;
       this.y = Math.random() * (canvas.height - this.height);
     }
+    //this.sprite.currentFrame = (this.sprite.currentFrame + 1) % coinFrames.length;
+    console.log("current frame:", this.sprite.currentFrame);
+    this.frameCounter = (this.frameCounter + 1) % (coinFrames.length * frameDelay);
+    console.log("Frame Counter:", this.frameCounter);
+    console.log("Current Frame:", this.sprite.currentFrame);
+
+    if (this.frameCounter % frameDelay === 0) {
+      this.sprite.currentFrame = (this.sprite.currentFrame + 1) % coinFrames.length;
+    }
+    console.log("Current Frame (after):", this.sprite.currentFrame);
   }
 }
 // const treasureItem = new CollectibleObstacle(700, canvas.height - 50, 30, 30, '#FFD700', 2, 10);
-const treasureItem = new CollectibleObstacle(100, 100, 30, 30, '#FFD700', 2, 10);
+//const treasureItem = new CollectibleObstacle(100, 100, 30, 30, '#FFD700', 2, 10);
+const treasureItem = new CollectibleObstacle(700, 100, 10, 10, coinSprite, 2, 10);
 
 class Platform {
   constructor() {
@@ -215,7 +266,7 @@ function update() {
   }
   // Move obstacle
   obstacle.x -= obstacle.speed;
-  treasureItem.update();
+  treasureItem.update(5);
 
   // Check for collision with player
   if (
