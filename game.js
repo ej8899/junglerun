@@ -281,7 +281,7 @@ function update() {
       // Player collects the obstacle, add points or perform other actions
       // For now, let's reset the collectible obstacle position
       treasureItem.x = canvas.width;
-      score +=100;
+      score +=10;
       treasureItem.y = Math.random() * (canvas.height - treasureItem.height);
     }
 
