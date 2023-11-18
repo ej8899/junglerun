@@ -72,8 +72,8 @@ class Obstacle {
     this.speed = 4;
   }
   draw() {
-    c.fillStyle = obstacle.color;
-    c.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    c.fillStyle = this.color;
+    c.fillRect(this.x, this.y, this.width, this.height);
   }
   update() {
     this.draw();
@@ -81,6 +81,25 @@ class Obstacle {
 };
 
 const obstacle = new Obstacle();
+
+class CollectibleObstacle extends Obstacle {
+  constructor(x, y, width, height, color, speed, points) {
+    super(x, y, width, height, color, speed);
+    this.points = points;
+  }
+
+  update() {
+    this.x -= this.speed;
+
+    // Check if the obstacle has moved off-screen, reset its position
+    if (this.x <= -this.width) {
+      this.x = canvas.width;
+      this.y = Math.random() * (canvas.height - this.height);
+    }
+  }
+}
+// const treasureItem = new CollectibleObstacle(700, canvas.height - 50, 30, 30, '#FFD700', 2, 10);
+const treasureItem = new CollectibleObstacle(100, 100, 30, 30, '#FFD700', 2, 10);
 
 class Platform {
   constructor() {
@@ -187,7 +206,9 @@ function updateScore() {
   c.fillText("Score: " + parseInt(score), 10, 30);
 }
 
+//
 // Update game state
+//
 function update() {
   if (isGameOver) {
     return; // Stop updating if the game is over
@@ -248,6 +269,21 @@ function update() {
         obstacle.x = canvas.width;
     }
 
+
+    // Check for collision with player for collectible items
+    if (
+      player.position.x < treasureItem.x + treasureItem.width &&
+      player.position.x + player.width > treasureItem.x &&
+      player.position.y < treasureItem.y + treasureItem.height &&
+      player.position.y + player.height > treasureItem.y
+    ) {
+      // Player collects the obstacle, add points or perform other actions
+      // For now, let's reset the collectible obstacle position
+      treasureItem.x = canvas.width;
+      treasureItem.y = Math.random() * (canvas.height - treasureItem.height);
+    }
+
+
     // platform handler
     if (player.position.y + player.height <= platform.position.y) {
       player.isJumping = false;
@@ -272,6 +308,7 @@ function draw() {
 
     // Draw obstacle
     obstacle.update();
+    treasureItem.update();
 
     platform.draw();
 
