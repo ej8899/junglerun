@@ -1,3 +1,6 @@
+// Imports
+
+
 //
 // Get the canvas element and its 2d context
 //
@@ -88,6 +91,46 @@ class Platform {
   }
 }
 const platform = new Platform();
+
+function createImage(imageSource) {
+  const image = new Image();
+  image.src = imageSource
+  return image;
+}
+
+class Background {
+  constructor(imgSrc, speed, scale) {
+    this.img = new Image();
+    this.img.src = imgSrc;
+    this.speed = speed;
+    this.scale = scale;
+    this.x = 0;
+    this.y = 0;
+    this.width = canvas.width * this.scale;
+    this.height = canvas.height;
+  }
+
+  draw() {
+    c.drawImage(this.img, this.x, this.y, this.width, this.height);
+    c.drawImage(this.img, this.x + this.width, this.y, this.width, this.height);
+  }
+
+  update() {
+    this.x -= this.speed;
+
+    // Check if the image has moved off-screen, reset its position
+    if (this.x <= -this.width) {
+      this.x = 0;
+    }
+  }
+}
+const backgroundLayers = [ 
+  new Background('./images/plx-1.png', 0.0, 1.5),
+  new Background('./images/plx-2.png', 0.2, 1.5),
+  new Background('./images/plx-3.png', 0.4, 1.5),
+  new Background('./images/plx-4.png', 0.6, 1.5),
+  new Background('./images/plx-5.png', 0.9, 1.5)
+];
 
 //
 // Event listeners
@@ -205,6 +248,11 @@ function draw() {
     // Clear the canvas
     c.clearRect(0, 0, canvas.width, canvas.height);
 
+    backgroundLayers.forEach(background => {
+      background.update();
+      background.draw();
+    });
+
     // Draw player
     player.update();
 
@@ -213,6 +261,7 @@ function draw() {
 
     platform.draw();
 }
+
 
 //
 // Game loop
