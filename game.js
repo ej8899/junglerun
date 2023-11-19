@@ -128,7 +128,6 @@ class CollectibleObstacle extends Obstacle {
   }
 
   update(frameDelay = 0) {
-    console.log(frameDelay)
     this.x -= this.speed;
 
     // Check if the obstacle has moved off-screen, reset its position
@@ -137,20 +136,17 @@ class CollectibleObstacle extends Obstacle {
       this.y = Math.random() * (canvas.height - this.height);
     }
     //this.sprite.currentFrame = (this.sprite.currentFrame + 1) % coinFrames.length;
-    console.log("current frame:", this.sprite.currentFrame);
     this.frameCounter = (this.frameCounter + 1) % (coinFrames.length * frameDelay);
-    console.log("Frame Counter:", this.frameCounter);
-    console.log("Current Frame:", this.sprite.currentFrame);
 
     if (this.frameCounter % frameDelay === 0) {
       this.sprite.currentFrame = (this.sprite.currentFrame + 1) % coinFrames.length;
     }
-    console.log("Current Frame (after):", this.sprite.currentFrame);
   }
 }
 // const treasureItem = new CollectibleObstacle(700, canvas.height - 50, 30, 30, '#FFD700', 2, 10);
 //const treasureItem = new CollectibleObstacle(100, 100, 30, 30, '#FFD700', 2, 10);
-const treasureItem = new CollectibleObstacle(700, 100, 10, 10, coinSprite, 2, 10);
+const treasureItem = new CollectibleObstacle(700, 50, 10, 10, coinSprite, 2, 10);
+const treasures = [];
 
 class Platform {
   constructor() {
@@ -323,17 +319,33 @@ function update() {
 
 
     // Check for collision with player for collectible items
-    if (
-      player.position.x < treasureItem.x + treasureItem.width &&
-      player.position.x + player.width > treasureItem.x &&
-      player.position.y < treasureItem.y + treasureItem.height &&
-      player.position.y + player.height > treasureItem.y
-    ) {
-      // Player collects the obstacle, add points or perform other actions
-      // For now, let's reset the collectible obstacle position
-      treasureItem.x = canvas.width;
-      score +=10;
-      treasureItem.y = Math.random() * (canvas.height - treasureItem.height);
+    for (let i = treasures.length - 1; i >= 0; i--) {
+      treasures[i].update(10);
+  
+      if (
+        player.position.x < treasures[i].x + treasures[i].width &&
+        player.position.x + player.width > treasures[i].x &&
+        player.position.y < treasures[i].y + treasures[i].height &&
+        player.position.y + player.height > treasures[i].y
+      ) {
+        // Player collects the treasure, add points or perform other actions
+        score += 10;
+        treasures.splice(i, 1); // Remove collected treasure from the array
+      }
+    }
+  
+    // add coins
+    if (Math.random() < 0.02) {
+      const newTreasure = new CollectibleObstacle(
+        canvas.width,
+        Math.random() * (canvas.height - treasureItem.height),
+        10,
+        10,
+        coinSprite,
+        2,
+        10
+      );
+      treasures.push(newTreasure);
     }
 
 
@@ -361,7 +373,11 @@ function draw() {
 
     // Draw obstacle
     obstacle.update();
-    treasureItem.draw();
+
+
+    treasures.forEach((treasure) => {
+      treasure.draw();
+    });
 
     platform.draw();
 
