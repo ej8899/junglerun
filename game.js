@@ -37,7 +37,9 @@ grass4.src = './sprites/grass4.png';
 const nointeractionImages = [grass1, grass2, grass3, grass4, signRight];
 
 const playerSpriteRuns = new Image();
-playerSpriteRuns.src = './sprites/player-run-spritesheet.png'
+playerSpriteRuns.src = './sprites/player-run-spritesheet.png';
+const snakeSprite = new Image();
+snakeSprite.src = './sprites/snake.png'
 
 const coinSheet = new Image();
 coinSheet.src = './sprites/Coin.png';
@@ -152,11 +154,32 @@ class Obstacle {
     this.height = height;
     this.color = color;
     this.speed = speed;
+    this.currentFrame = 0;
+    this.numFrames = 10;
+    this.frameInterval = 100; // milliseconds
+    this.lastFrameChangeTime = Date.now();
   }
   draw() {
-    c.fillStyle = this.color;
-    c.fillRect(this.x, this.y, this.width, this.height);
+    // c.fillStyle = this.color;
+    // c.fillRect(this.x, this.y, this.width, this.height);
     // c.drawImage();
+
+    c.drawImage(
+      snakeSprite,
+      (320/10)*this.currentFrame,
+      0,
+      (320/10),
+      33,
+      this.x,
+      this.y-23,
+      this.width *1.5,
+      this.height *1.8);
+      // Update the frame if enough time has passed
+      const currentTime = Date.now();
+      if (currentTime - this.lastFrameChangeTime > this.frameInterval) {
+        this.currentFrame = (this.currentFrame + 1) % this.numFrames;
+        this.lastFrameChangeTime = currentTime;
+      }
   }
   update() {
     this.draw();
