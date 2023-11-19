@@ -23,6 +23,9 @@ pixelFont.load().then((font) => {
 //
 // sprites
 //
+const signRight = new Image();
+signRight.src = './sprites/pointer-right.png';
+
 const coinSheet = new Image();
 coinSheet.src = './sprites/Coin.png';
 const coinSprite = {
@@ -204,6 +207,38 @@ const backgroundLayers = [
   new Background('./images/plx-5.png', 0.9, 1.5)
 ];
 
+
+class ScrollingItem {
+  constructor(image, speed, y) {
+    if (!y) {
+      this.y = Math.random() * (canvas.height - this.height);
+    } else this.y = y;
+    this.image = image;
+    this.width = 40; // Adjust the width as needed
+    this.height = 40; // Adjust the height as needed
+    this.x = canvas.width; // Start off-screen to the right
+    this.speed = speed;
+  }
+
+  draw() {
+    c.drawImage(this.image, this.x, this.y, this.width, this.height);
+  }
+
+  update(y) {
+    this.x -= this.speed;
+
+    // Check if the item has moved off-screen, reset its position
+    if (this.x <= -this.width) {
+      this.x = canvas.width;
+      if (!y) {
+        this.y = Math.random() * (canvas.height - this.height);
+      } else this.y = y;
+    }
+  }
+}
+const scrollingItem = new ScrollingItem(signRight, 2, canvas.height-39);
+
+
 //
 // Event listeners
 //
@@ -247,7 +282,7 @@ addEventListener("keyup", (e) => {
 
 function updateScore() {
   if (isGameOver) return;
-  score += 0.05;
+  score += 0.01;
   c.fillStyle = "white";
   c.font = "20px PixelFont";
   c.fillText("Score: " + parseInt(score), 10, 30);
@@ -329,7 +364,7 @@ function update() {
         player.position.y + player.height > treasures[i].y
       ) {
         // Player collects the treasure, add points or perform other actions
-        score += 10;
+        score += 1;
         treasures.splice(i, 1); // Remove collected treasure from the array
       }
     }
@@ -380,6 +415,9 @@ function draw() {
     });
 
     platform.draw();
+
+    scrollingItem.update(canvas.height-39);
+    scrollingItem.draw();
 
     updateScore();
 }
