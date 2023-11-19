@@ -147,9 +147,9 @@ const player = new Player();
 
 // Obstacle object
 class Obstacle {
-  constructor(x,y,width = 30,height = 30,speed = 4,color = '#F00') {
+  constructor(x,y=canvas.height -30,width = 30,height = 30,speed = 4,color = '#F00') {
     this.x = canvas.width;
-    this.y = canvas.height - 30;
+    this.y = y;
     this.width = width;
     this.height = height;
     this.color = color;
@@ -206,8 +206,8 @@ class CollectibleObstacle extends Obstacle {
       coinFrames[frameIndex].height,      
       this.x,
       this.y,
-      this.width *2.5,
-      this.height *2.5
+      this.width *2.0,
+      this.height *2.0
     );
   }
 
@@ -229,7 +229,7 @@ class CollectibleObstacle extends Obstacle {
 }
 // const treasureItem = new CollectibleObstacle(700, canvas.height - 50, 30, 30, '#FFD700', 2, 10);
 //const treasureItem = new CollectibleObstacle(100, 100, 30, 30, '#FFD700', 2, 10);
-const treasureItem = new CollectibleObstacle(700, 50, 10, 10, coinSprite, 2, 10);
+const treasureItem = new CollectibleObstacle(700, 150, 10, 10, coinSprite, 2, 10);
 const treasures = [];
 
 class Platform {
@@ -492,19 +492,21 @@ function update() {
     }
   
     // add coins
-    if (Math.random() < 0.02) {
+    if (getRandomNumber(1,300) > 290) {
+      let yLoc = getRandomNumber(treasureItem.height,canvas.height-treasureItem.height);
       const newTreasure = new CollectibleObstacle(
         canvas.width,
-        Math.random() * (canvas.height - treasureItem.height),
+        yLoc,
+        //Math.random() * (canvas.height - treasureItem.height),
         10,
         10,
         coinSprite,
         2,
         10
       );
+      if(treasures.length > 7) return;
       treasures.push(newTreasure);
     }
-
 
     // platform handler
     if (player.position.y + player.height <= platform.position.y) {
