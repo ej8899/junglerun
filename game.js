@@ -85,32 +85,39 @@ class Player  {
       this.lastFrameChangeTime = Date.now();
     }
     draw() {
-      // c.fillStyle = this.color;
-      // c.fillRect(this.position.x, this.position.y, this.width, this.height);
-      // c.drawImage(playerSpriteRuns, this.position.x, this.position.y-23, this.width*1.5, this.height*1.8);
-      console.log('player frame:',this.currentFrame)
+      
+      // c.drawImage(
+      //   coinSheet,
+      //   coinFrames[frameIndex].x,
+      //   coinFrames[frameIndex].y,
+      //   coinFrames[frameIndex].width,
+      //   coinFrames[frameIndex].height,      
+      //   this.position.x,
+      //   this.position.y,
+      //   this.width *1.5,
+      //   this.height *1.8
+      // );
+      // c.drawImage(
+      //   playerSpriteRuns,
+      //   this.frameWidth * this.currentFrame,
+      //   0,
+      //   this.frameWidth,
+      //   33, // height of ea frame
+      //   this.position.x,
+      //   this.position.y - 23,
+      //   this.width * 1.5,
+      //   this.height * 1.8
+      // );
       c.drawImage(
-        coinSheet,
-        coinFrames[frameIndex].x,
-        coinFrames[frameIndex].y,
-        coinFrames[frameIndex].width,
-        coinFrames[frameIndex].height,      
-        this.position.x,
-        this.position.y,
-        this.width *1.5,
-        this.height *1.8
-      );
-      c.drawImage(
-        this.playerSpriteRuns,
-        this.frameWidth * this.currentFrame,
+        playerSpriteRuns,
+        (168/8)*this.currentFrame,
         0,
-        this.frameWidth,
-        this.playerSpriteRuns.height,
+        (168/8),
+        33,
         this.position.x,
-        this.position.y - 23,
-        this.width * 1.5,
-        this.height * 1.8
-      );
+        this.position.y-23,
+        this.width *1.5,
+        this.height *1.8);
   
       // Update the frame if enough time has passed
       const currentTime = Date.now();
