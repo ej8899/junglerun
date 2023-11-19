@@ -13,6 +13,7 @@ const c = canvas.getContext("2d");
 let isGameOver = false;
 let score = 0;
 const gravity = 0.5;
+const godMode = true;
 
 const pixelFont = new FontFace('PixelFont', 'url(./PressStart2P-vaV7.ttf)');
 pixelFont.load().then((font) => {
@@ -25,6 +26,18 @@ pixelFont.load().then((font) => {
 //
 const signRight = new Image();
 signRight.src = './sprites/pointer-right.png';
+const grass1 = new Image();
+grass1.src = './sprites/grass1.png';
+const grass2 = new Image();
+grass2.src = './sprites/grass2.png';
+const grass3 = new Image();
+grass3.src = './sprites/grass3.png';
+const grass4 = new Image();
+grass4.src = './sprites/grass4.png';
+const nointeractionImages = [grass1, grass2, grass3, grass4, signRight];
+
+const playerSpriteRuns = new Image();
+playerSpriteRuns.src = './sprites/player-run-spritesheet.png'
 
 const coinSheet = new Image();
 coinSheet.src = './sprites/Coin.png';
@@ -63,10 +76,48 @@ class Player  {
       this.isJumping = false;
       this.jumpStartY = 0;
       this.gravity = gravity;
+
+      this.playerSpriteRuns = playerSpriteRuns;
+      this.numFrames = 8;
+      this.currentFrame = 0;
+      this.frameWidth = this.playerSpriteRuns.width / this.numFrames;
+      this.frameInterval = 100; // milliseconds
+      this.lastFrameChangeTime = Date.now();
     }
     draw() {
-      c.fillStyle = this.color;
-      c.fillRect(this.position.x, this.position.y, this.width, this.height);
+      // c.fillStyle = this.color;
+      // c.fillRect(this.position.x, this.position.y, this.width, this.height);
+      // c.drawImage(playerSpriteRuns, this.position.x, this.position.y-23, this.width*1.5, this.height*1.8);
+      console.log('player frame:',this.currentFrame)
+      c.drawImage(
+        coinSheet,
+        coinFrames[frameIndex].x,
+        coinFrames[frameIndex].y,
+        coinFrames[frameIndex].width,
+        coinFrames[frameIndex].height,      
+        this.position.x,
+        this.position.y,
+        this.width *1.5,
+        this.height *1.8
+      );
+      c.drawImage(
+        this.playerSpriteRuns,
+        this.frameWidth * this.currentFrame,
+        0,
+        this.frameWidth,
+        this.playerSpriteRuns.height,
+        this.position.x,
+        this.position.y - 23,
+        this.width * 1.5,
+        this.height * 1.8
+      );
+  
+      // Update the frame if enough time has passed
+      const currentTime = Date.now();
+      if (currentTime - this.lastFrameChangeTime > this.frameInterval) {
+        this.currentFrame = (this.currentFrame + 1) % this.numFrames;
+        this.lastFrameChangeTime = currentTime;
+      }
     }
     update() {
       this.position.y += this.velocity.y;
@@ -209,34 +260,71 @@ const backgroundLayers = [
 
 
 class ScrollingItem {
-  constructor(image, speed, y) {
+  constructor(images, speed, y) {
     if (!y) {
       this.y = Math.random() * (canvas.height - this.height);
     } else this.y = y;
-    this.image = image;
+    this.images = images;
+    //this.image = image;
     this.width = 40; // Adjust the width as needed
     this.height = 40; // Adjust the height as needed
-    this.x = canvas.width; // Start off-screen to the right
+    this.x = canvas.width;
     this.speed = speed;
+    this.currentImageIndex = Math.floor(Math.random() * images.length)
+    //this.image = image;
   }
 
   draw() {
-    c.drawImage(this.image, this.x, this.y, this.width, this.height);
+    const currentImage = this.images[this.currentImageIndex];
+    c.drawImage(currentImage, this.x, this.y, this.width, this.height);
   }
 
   update(y) {
     this.x -= this.speed;
 
     // Check if the item has moved off-screen, reset its position
-    if (this.x <= -this.width) {
+    if (this.x+this.wdith <= 0) {
       this.x = canvas.width;
       if (!y) {
         this.y = Math.random() * (canvas.height - this.height);
       } else this.y = y;
+      this.currentImageIndex = Math.floor(Math.random() * this.images.length);
     }
   }
 }
-const scrollingItem = new ScrollingItem(signRight, 2, canvas.height-39);
+//const scrollingItem = new ScrollingItem(signRight, 2, canvas.height-39);
+// const nointeractionScrollingItem = new ScrollingItem(nointeractionImages, 1);
+const scrollingItems = [];
+
+//
+// misc helpers
+//
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+//
+function createScrollingItems(images, count, speed) {
+  // If there's already a "signRight" image, return early
+  const hasSignRight = scrollingItems.some(item => item.image === images[4]);
+  if (hasSignRight) return;
+  if(scrollingItems.length > 5) return;
+  if (getRandomNumber(1,400) > 2) return;
+  // console.log("images:",images)
+  for (let i = 0; i < count; i++) {
+    const scrollingItem = new ScrollingItem(images, speed, canvas.height-40);
+    scrollingItems.push(scrollingItem);
+  }
+  // const randomIndex = Math.floor(Math.random() * images.length);
+  // const randomImage = images[randomIndex];
+
+  // if (!(randomImage instanceof Image)) {
+  //   console.error(`Invalid image at index ${randomIndex}`);
+  //   return;
+  // }
+  // const scrollingItem = new ScrollingItem([randomImage], speed, canvas.height - 40);
+  // scrollingItems.push(scrollingItem);
+}
 
 
 //
@@ -300,17 +388,19 @@ function update() {
   treasureItem.update(5);
 
   // Check for collision with player
-  if (
-    player.position.x < obstacle.x + obstacle.width &&
-    player.position.x + player.width > obstacle.x &&
-    player.position.y < obstacle.y + obstacle.height &&
-    player.position.y + player.height > obstacle.y
-) {
-    // Player hit by obstacle, game over
-    isGameOver = true;
-    console.log("Game Over");
-    return;
-}
+  if(!godMode) {
+    if (
+      player.position.x < obstacle.x + obstacle.width &&
+      player.position.x + player.width > obstacle.x &&
+      player.position.y < obstacle.y + obstacle.height &&
+      player.position.y + player.height > obstacle.y
+    ) {
+      // Player hit by obstacle, game over
+      isGameOver = true;
+      console.log("Game Over");
+      return;
+    }
+  }
 
   // Player jump
   if (player.isJumping) {
@@ -336,21 +426,23 @@ function update() {
         }
     }
 
-    // Check for collision with player
-    if (
-        player.position.x < obstacle.x + obstacle.width &&
-        player.position.x + player.width > obstacle.x &&
-        player.position.y < obstacle.y + obstacle.height &&
-        player.position.y + player.height > obstacle.y
-    ) {
-        // Collision detected, reset the obstacle position
-        obstacle.x = canvas.width;
-    }
+    // // Check for collision with Player
+    // if(!godMode) {
+    //   if (
+    //       player.position.x < obstacle.x + obstacle.width &&
+    //       player.position.x + player.width > obstacle.x &&
+    //       player.position.y < obstacle.y + obstacle.height &&
+    //       player.position.y + player.height > obstacle.y
+    //   ) {
+    //       // Collision detected, reset the obstacle position
+    //       obstacle.x = canvas.width;
+    //   }
 
-    // Check if obstacle moved offscreen, reset its position
-    if (obstacle.x + obstacle.width < 0) {
-        obstacle.x = canvas.width;
-    }
+      // Check if obstacle moved offscreen, reset its position
+      if (obstacle.x + obstacle.width < 0) {
+          obstacle.x = canvas.width;
+      }
+
 
 
     // Check for collision with player for collectible items
@@ -389,6 +481,8 @@ function update() {
       player.isJumping = false;
       player.gravity = 0;
     }
+
+  createScrollingItems([grass1, grass2, grass3, grass4,signRight], 1, 2);
 }
 
 //
@@ -416,8 +510,16 @@ function draw() {
 
     platform.draw();
 
-    scrollingItem.update(canvas.height-39);
-    scrollingItem.draw();
+    // update and draw any non interaction objectsw
+    for (let index = scrollingItems.length - 1; index >= 0; index--) {
+      const item = scrollingItems[index];
+      item.update(canvas.height - 39);
+      item.draw();
+      if (item.x + item.width <= 0) {
+        scrollingItems.splice(index, 1);
+        console.log("removed item at index:", index);
+      }
+    }
 
     updateScore();
 }
