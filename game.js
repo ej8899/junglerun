@@ -117,9 +117,9 @@ class Player  {
         (168/8),
         33,
         this.position.x,
-        this.position.y-23,
-        this.width *1.5,
-        this.height *1.8);
+        this.position.y-15,
+        this.width *1.2,
+        this.height *1.5);
   
       // Update the frame if enough time has passed
       const currentTime = Date.now();
@@ -501,7 +501,7 @@ function update() {
         10,
         10,
         coinSprite,
-        2,
+        getRandomNumber(1.5,1.9),
         10
       );
       if(treasures.length > 7) return;
